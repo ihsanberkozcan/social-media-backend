@@ -9,14 +9,16 @@ import {
   updateUser,
 } from "../controllers/user.js";
 
-router.put("/:id", updateUser);
+import { auth } from "../middleware/auth.js";
 
-router.delete("/:id", deleteUser);
+router.put("/:id", auth, updateUser);
 
-router.get("/:id", getUser);
+router.delete("/:id", auth, deleteUser);
 
-router.put("/:id/follow", follow);
+router.get("/:id", auth, getUser);
 
-router.put("/:id/unfollow", unfollow);
+router.put("/:id/follow", auth, follow);
+
+router.put("/:id/unfollow", auth, unfollow);
 
 export default router;
