@@ -86,3 +86,19 @@ export const unfollow = async (req, res) => {
     res.status(403).json("you can not unfollow yourself");
   }
 };
+
+export const searchUser = async (req, res) => {
+  try {
+    const searchTerm = req.query.username;
+    const regex = new RegExp(`^${searchTerm}`);
+    const users = await User.find({ username: regex }).limit(5);
+    const returnUsers = users.map((user) => {
+      const { password, updatedAt, ...other } = user._doc;
+      return other;
+    });
+    return res.status(200).json(returnUsers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
