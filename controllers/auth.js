@@ -1,5 +1,8 @@
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+
+const secret = process.env.JWT_SECRET;
 
 // register controller
 export const register = async (req, res) => {
@@ -14,7 +17,11 @@ export const register = async (req, res) => {
     });
 
     const user = await newUser.save();
-    res.status(200).json(user);
+    const token = jwt.sign({ email: user.email, id: user._id }, secret, {
+      expiresIn: "1h",
+    });
+    const { password, updatedAt, isAdmin, ...other } = user._doc;
+    res.status(201).json({ other, token });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -25,6 +32,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
+
     if (!user) {
       return res.status(404).json("user not found");
     }
@@ -32,9 +40,16 @@ export const login = async (req, res) => {
       req.body.password,
       user.password
     );
-    !validPassword && res.status(400).json("wrong password");
 
-    res.status(200).json(user);
+    if (!validPassword) {
+      return res.status(400).json("wrong password");
+    } else {
+      const token = jwt.sign({ email: user.email, id: user._id }, secret, {
+        expiresIn: "1h",
+      });
+      const { password, updatedAt, isAdmin, ...other } = user._doc;
+      return res.status(200).json({ other, token });
+    }
   } catch (err) {
     res.status(500).json(err);
   }

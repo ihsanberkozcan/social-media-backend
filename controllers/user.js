@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import User from "../models/User.js";
 
 export const updateUser = async (req, res) => {
-  if (req.body.userId === req.params.id || req.body.isAdmin) {
+  if (req.userId === req.params.id || req.body.isAdmin) {
     if (req.body.password) {
       try {
         const salt = await bcrypt.genSalt(10);
@@ -25,7 +25,7 @@ export const updateUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-  if (req.body.userId === req.params.id || req.body.isAdmin) {
+  if (req.userId === req.params.id || req.body.isAdmin) {
     try {
       await User.findByIdAndDelete(req.params.id);
       res.status(200).json("Account has been deleted");
@@ -48,12 +48,12 @@ export const getUser = async (req, res) => {
 };
 
 export const follow = async (req, res) => {
-  if (req.body.userId !== req.params.id) {
+  if (req.userId !== req.params.id) {
     try {
       const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-      if (!user.followers.includes(req.body.userId)) {
-        await user.updateOne({ $push: { followers: req.body.userId } });
+      const currentUser = await User.findById(req.userId);
+      if (!user.followers.includes(req.userId)) {
+        await user.updateOne({ $push: { followers: req.userId } });
         await currentUser.updateOne({ $push: { followings: req.params.id } });
         res.status(200).json("user has been followed");
       } else {
@@ -68,12 +68,12 @@ export const follow = async (req, res) => {
 };
 
 export const unfollow = async (req, res) => {
-  if (req.body.userId !== req.params.id) {
+  if (req.userId !== req.params.id) {
     try {
       const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-      if (user.followers.includes(req.body.userId)) {
-        await user.updateOne({ $pull: { followers: req.body.userId } });
+      const currentUser = await User.findById(req.userId);
+      if (user.followers.includes(req.userId)) {
+        await user.updateOne({ $pull: { followers: req.userId } });
         await currentUser.updateOne({ $pull: { followings: req.params.id } });
         res.status(200).json("user has been unfollowed");
       } else {
